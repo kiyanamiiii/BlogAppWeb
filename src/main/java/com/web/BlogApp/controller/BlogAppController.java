@@ -1,42 +1,80 @@
 package com.web.BlogApp.controller;
 
-
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-//import com.web.BlogApp.model.PostComentarioModel;
+import com.web.BlogApp.dtos.BlogAppRecordDto;
 import com.web.BlogApp.model.PostModel;
 import com.web.BlogApp.service.BlogAppService;
 
+import jakarta.validation.Valid;
+
 @Controller
-//@RestController //não funciona para returno de string
 public class BlogAppController {
 
-	
 	@Autowired
 	BlogAppService blogappservice;
-	
-//	@Autowired
-//	private PostComentarioRepository pr; 
-	
-	
+
 	// LISTA TODOS OS POSTS
-	@GetMapping(value = "/posts") // posso utilizar assim também chamando pelo navegador
-//	@RequestMapping(value = "/posts", method = RequestMethod.GET)
-	public ModelAndView  getPosts() {
-		 ModelAndView mv = new ModelAndView("posts");
-		 List<PostModel> posts = blogappservice.findAll();
-		 mv.addObject("post", posts);
-		 return mv;
+	@GetMapping(value = "/posts")
+	public ModelAndView getPosts() {
+		ModelAndView mv = new ModelAndView("posts");
+		List<PostModel> posts = blogappservice.findAll();
+		mv.addObject("post", posts);
+		return mv;
 	}
-	//Retorna o form para adicionar um post
-	//@RequestMapping(value = "/newpost", method = RequestMethod.GET)
+
+	// MOSTRA DETALHES DE UM POST ESPECÍFICO
+	@GetMapping(value = "/posts/{id}")
+	public ModelAndView getPostDetails(@PathVariable UUID id) {
+		ModelAndView mv = new ModelAndView("postDetails");
+		Optional<PostModel> post = blogappservice.findById(id);
+
+		if (post.isPresent()) {
+			mv.addObject("post", post.get());
+		}
+
+		return mv;
+	}
+
+	// PREPARAR FORMULÁRIO PARA NOVO POST
 	@GetMapping(value = "/newpost")
-	public String getPostform() {
+	public String getPostForm(Model model) {
+		model.addAttribute("postDto", new BlogAppRecordDto(null, null, null));
 		return "newpostForm";
+	}
+
+	// SALVAR NOVO POST
+	@PostMapping(value = "/newpost")
+	public String savePost(@Valid @ModelAttribute("postDto") BlogAppRecordDto postDto,
+						   BindingResult bindingResult,
+						   RedirectAttributes redirectAttributes) {
+		if (bindingResult.hasErrors()) {
+			return "newpostForm";
+		}
+
+		PostModel post = new PostModel();
+		post.setAutor(postDto.autor());
+		post.setTitulo(postDto.titulo());
+		post.setTexto(postDto.texto());
+		post.setData(LocalDate.now());
+
+		blogappservice.save(post);
+
+		redirectAttributes.addFlashAttribute("message", "Post created successfully!");
+		return "redirect:/posts";
 	}
 }
