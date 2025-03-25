@@ -96,9 +96,3 @@ The application uses a `TB_POST` table with the following columns:
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
-## Contact
-
-Your Name - your.email@example.com
-
-Project Link: [https://github.com/yourusername/web-blog-application](https://github.com/yourusername/web-blog-application)
