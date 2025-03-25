@@ -16,8 +16,8 @@ public class BlogAppApplication {
 	}
 	
 
-//	@RequestMapping("/")
-//	public String index() {
-//		return "index";
-//	}
+	@RequestMapping("/")
+	public String index() {
+	return "posts";
+	}
 }

@@ -28,6 +28,12 @@ public class BlogAppController {
 	@Autowired
 	BlogAppService blogappservice;
 
+	// Add root path redirection
+	@GetMapping("/")
+	public String rootRedirect() {
+		return "redirect:/posts";
+	}
+
 	// LISTA TODOS OS POSTS
 	@GetMapping(value = "/posts")
 	public ModelAndView getPosts() {
@@ -75,6 +81,19 @@ public class BlogAppController {
 		blogappservice.save(post);
 
 		redirectAttributes.addFlashAttribute("message", "Post created successfully!");
+		return "redirect:/posts";
+	}
+
+	// DELETE POST
+	@GetMapping("/posts/delete/{id}")
+	public String deletePost(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+		Optional<PostModel> post = blogappservice.findById(id);
+
+		if (post.isPresent()) {
+			blogappservice.delete(post.get());
+			redirectAttributes.addFlashAttribute("message", "Post deleted successfully!");
+		}
+
 		return "redirect:/posts";
 	}
 }
